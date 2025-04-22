@@ -1,0 +1,266 @@
+import java.sql.Time;
+import java.util.Scanner;
+import java.util.Timer;
+import java.util.TimerTask;
+
+public class Exp2_S6_Sebastian_Cardenas {
+
+    // *** VARIABLES ESTÁTICAS  ******************************************************************************
+    static int totalIngresos = 0;
+    static int totalEntradasVendidas = 0;
+    static int totalReservas = 0;
+
+    // *** VARIABLES DE INSTANCIA  ****************************************************************************
+    int numeroVenta = 0;
+    String ubicacionAsientoPersistente = "";
+    double precioFinalPersistente = 0;
+    int entradasPersistentes = 0;
+    public static void main(String[] args) {
+        Scanner sc = new Scanner(System.in);
+
+        // *** VARIABLES LOCALES ***************************************************************************
+        int tipoEntrada;
+        int tipoTarifa;
+        int cantidadEntradas;
+        double precioGeneral, precioEstudiante, precioFinal, precioTotal;
+        String respuestaMenu = "";
+
+        // *** CONFIGURACIÓN DEL TEATRO **********************************************************************
+        String[][] teatro = {
+                {"A1", "A2", "A3", "A4", "A5"},
+                {"B1", "B2", "B3", "B4", "B5"},
+                {"C1", "C2", "C3", "C4", "C5"}
+        };
+
+        System.out.println("Bienvenido a Teatro Moro");
+
+        // *** BUCLE PRINCIPAL DEL MENÚ **********************************************************************
+        do {
+            // --- Menú Principal ---
+            System.out.println("\\n*** Menú principal ***");
+            System.out.println("1. Comprar/Reservar entradas");
+            System.out.println("2. Salir");
+            System.out.println("3. Modificar una venta existente");
+            System.out.println("4. Imprimir boleta");
+            System.out.print("Elige una opción: ");
+            int opcionInicial = sc.nextInt();
+
+            if (opcionInicial == 2) {
+                // Salir
+                System.out.println("Gracias por visitarnos. ¡Hasta luego!");
+                break;
+            } else if (opcionInicial == 3) {
+                // Modificar venta existente
+                System.out.print("ID de venta a modificar: ");
+                int ventaMod = sc.nextInt();
+                System.out.println("Función modificación venta #" + ventaMod + " en desarrollo.");
+                continue;
+            } else if (opcionInicial == 4) {
+                // Imprimir boleta*****************************************************************************
+                System.out.print("ID de venta para imprimir boleta: ");
+                int ventaImp = sc.nextInt();
+                System.out.println("\n*** Boleta Venta #" + ventaImp + " ***");
+                System.out.println("Asiento: " + new Exp2_S6_Sebastian_Cardenas().ubicacionAsientoPersistente);
+                System.out.println("Cantidad: " + new Exp2_S6_Sebastian_Cardenas().entradasPersistentes);
+                System.out.println("Total pagado: $" + (int) new Exp2_S6_Sebastian_Cardenas().precioFinalPersistente);
+                System.out.println("***********************");
+                continue;
+            } else if (opcionInicial != 1) {
+                System.out.println("Opción inválida. Intenta nuevamente.");
+                continue;
+            }
+
+            // --- Flujo de compra o reserva********************************************************************
+            String tipoOperacion;
+
+            //SE REALIZA BREAKPOINT PARA REVISION Y CORRECCION#########################################
+            do {
+                System.out.print("¿Comprar o reservar? (comprar/reservar): ");
+                tipoOperacion = sc.next().toLowerCase();
+                if (!tipoOperacion.equals("comprar") && !tipoOperacion.equals("reservar")) {
+                    System.out.println("Opción inválida. Escribe 'comprar' o 'reservar'.");
+                }
+            } while (!tipoOperacion.equals("comprar") && !tipoOperacion.equals("reservar"));
+
+            // --- Solicitar cantidad de entradas ---**********************************************************
+            do {
+                System.out.print("Cantidad de entradas a " + (tipoOperacion.equals("reservar") ? "reservar" : "comprar") + ": ");
+                cantidadEntradas = sc.nextInt();
+                if (cantidadEntradas <= 0) {
+                    System.out.println("Cantidad inválida. Debe ser al menos 1.");
+                }
+            } while (cantidadEntradas <= 0);
+
+            // --- Mostrar plano de asientos ---******************************************************************
+            System.out.println("\n*** Plano de asientos ***");
+            for (String[] fila : teatro) {
+                for (String asiento : fila) {
+                    System.out.print("[" + asiento + "] ");
+                }
+                System.out.println();
+            }
+
+            // --- Selección y validación de asiento ---**********************************************************
+            //SE REALIZA BREAKPOINT PARA REVISION Y CORRECCION#########################################
+            String asientoSel;
+            boolean asientoValido = false;
+            do {
+                System.out.print("Selecciona asiento (Ej: A1): ");
+                asientoSel = sc.next().toUpperCase();
+                for (int i = 0; i < teatro.length && !asientoValido; i++) {
+                    for (int j = 0; j < teatro[i].length; j++) {
+                        if (teatro[i][j].equals(asientoSel)) {
+                            teatro[i][j] = tipoOperacion.equals("reservar") ? "RS" : "XX";
+                            asientoValido = true;
+                            break;
+                        }
+                    }
+                }
+                if (!asientoValido) {
+                    System.out.println("Asiento inválido o no disponible.");
+                }
+            } while (!asientoValido);
+
+            // --- Manejo de reserva con temporizador de 3 minutos (180 segundos) ---****************************
+            if (tipoOperacion.equals("reservar")) {
+                totalReservas++;
+                System.out.println("\n*** Resumen de reserva ***");
+                System.out.println("Entradas: " + cantidadEntradas);
+                System.out.println("Asiento: " + asientoSel);
+                System.out.println("Tienes 3 minutos (180 segundos) para completar la compra antes de que expiren. ");
+
+                // *** TEMPORIZADOR DE 3 MINUTOS (180 segundos) ******************************************
+                Timer timer = new Timer();
+                String finalAsientoSel = asientoSel;
+                timer.schedule(new TimerTask() {
+                    @Override
+                    public void run() {
+                        // Liberar asiento reservado si no se compró****************************************+****
+
+
+
+                        int colIndex = 0;
+                        int filaIndex = 0;
+                        if (teatro[filaIndex][colIndex].equals("RS")) {
+                            teatro[filaIndex][colIndex] = finalAsientoSel;
+                            System.out.println(" La reserva del asiento " + finalAsientoSel + " ha expirado.");
+                        }
+                        timer.cancel();
+                    }
+                }, 3 * 60 * 1000); // 3 minutos en milisegundos (180000 ms)
+            }
+            // --- Manejo de reserva ---************************************************************************
+            if (tipoOperacion.equals("reservar")) {
+                totalReservas++;  // estadística global
+
+                System.out.println("\n*** Resumen de reserva ***");
+                System.out.println("Entradas: " + cantidadEntradas);
+                System.out.println("Asiento: " + asientoSel);
+                System.out.println("***********************");
+
+
+                Exp2_S6_Sebastian_Cardenas inst = new Exp2_S6_Sebastian_Cardenas();
+                inst.ubicacionAsientoPersistente = asientoSel;
+                inst.entradasPersistentes = cantidadEntradas;
+
+                // Preguntar volver a menú************************************************************************
+                System.out.print("¿Volver al menú principal? (si/no): ");
+                respuestaMenu = sc.next().toLowerCase();
+                if (!respuestaMenu.equals("si")) {
+                    System.out.println("Gracias por usar Teatro Moro.");
+                    System.exit(0);
+                }
+            } else {
+                continue;
+            }
+            // Cierra el bloque de la operación "reservar"********************************************************
+
+            // --- Flujo de compra ---**************************************************************************
+            // Promociones por cantidad*************************************************************************
+            System.out.println("\n*** Promociones ***");
+            System.out.println("2 entradas - 10% off");
+            System.out.println("3 entradas - 20% off");
+            System.out.println("4+ entradas - 30% off");
+            double descCant = (cantidadEntradas == 2 ? 0.10 : cantidadEntradas == 3 ? 0.20 : cantidadEntradas >= 4 ? 0.30 : 0);
+            if (descCant > 0) System.out.println("Descuento cantidad: " + (int) (descCant * 100) + "%");
+
+            // Descuento por edad o estudiante***************************************************************+**
+            System.out.print("Edad: ");
+            int edad = sc.nextInt();
+            double descEdad = (edad >= 60 ? 0.15 : (pedirEstudiante(sc) ? 0.10 : 0));
+            if (descEdad > 0) System.out.println("Descuento adicional: " + (int) (descEdad * 100) + "%");
+
+            // Tipos de entrada**********************************************************************************
+            System.out.println("\n*** Tipos de entrada ***");
+            System.out.println("1. VIP - $30000 ($20000 est.)");
+            System.out.println("2. Platea Baja - $15000 ($7500 est.)");
+            System.out.println("3. Platea Alta - $18000 ($9000 est.)");
+            System.out.println("4. Palcos - $13000 ($6500 est.)");
+            do {
+                System.out.print("Elige opción: ");
+                tipoEntrada = sc.nextInt();
+            } while (tipoEntrada < 1 || tipoEntrada > 4);
+            switch (tipoEntrada) {
+                case 1:
+                    precioGeneral = 30000;
+                    precioEstudiante = 20000;
+                    break;
+                case 2:
+                    precioGeneral = 15000;
+                    precioEstudiante = 7500;
+                    break;
+                case 3:
+                    precioGeneral = 18000;
+                    precioEstudiante = 9000;
+                    break;
+                default:
+                    precioGeneral = 13000;
+                    precioEstudiante = 6500;
+                    break;
+            }
+
+            // Tarifa********************************************************************************************
+            System.out.print("Tarifa (1.Publico,2.Estudiante): ");
+
+       do {
+                tipoTarifa = sc.nextInt();
+            } while (tipoTarifa < 1 || tipoTarifa > 2);
+
+            // Cálculo final*************************************************************************************
+            precioFinal = (tipoTarifa == 1 ? precioGeneral : precioEstudiante);
+            precioFinal -= precioFinal * descCant;
+            precioFinal -= precioFinal * descEdad;
+            precioTotal = precioFinal * cantidadEntradas;
+
+            // Estadísticas y boleta*****************************************************************************
+            //SE REALIZA BREAKPOINT PARA REVISION Y CORRECCION#########################################
+            totalEntradasVendidas += cantidadEntradas;
+            totalIngresos += precioTotal;
+            Exp2_S6_Sebastian_Cardenas venta = new Exp2_S6_Sebastian_Cardenas();
+
+            venta.ubicacionAsientoPersistente = asientoSel;
+            venta.entradasPersistentes = cantidadEntradas;
+            venta.precioFinalPersistente = precioFinal;
+
+            System.out.println("\\n*** Boleta Venta #" + (++venta.numeroVenta) + " ***");
+            System.out.println("Asiento: " + asientoSel);
+            System.out.println("Entradas: " + cantidadEntradas);
+            System.out.println("Total: $" + (int) precioTotal);
+            System.out.println("***********************");
+
+            // Preguntar volver al menú****************************************************************************
+            System.out.print("\\n¿Volver al menú principal? (si/no): ");
+            respuestaMenu = sc.next().toLowerCase();
+
+        }
+        while (respuestaMenu.equals("si"));
+
+        sc.close();
+    }
+
+    private static boolean pedirEstudiante(Scanner sc) {
+    }
+
+
+}
+

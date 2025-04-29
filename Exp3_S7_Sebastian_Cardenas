@@ -1,0 +1,251 @@
+import java.util.Scanner;
+import java.util.Timer;
+import java.util.TimerTask;
+import java.util.List;
+import java.util.ArrayList;
+
+public class Exp3_S7_Sebastian_Cardenas {
+    // *** VARIABLES ESTÁTICAS **************************************************************************************************************************************************************
+
+    static String nombreTeatro = "Teatro Moro";
+    static int capacidadSala = 15;
+    static int entradasDisponibles = capacidadSala;
+
+    // Precios por ubicación*************************************************************************************************************************************************
+    static final double PRECIO_VIP = 30000;
+    static final double PRECIO_PLATEA_BAJA = 15000;
+    static final double PRECIO_PLATEA_ALTA = 18000;
+    static final double PRECIO_BALCON = 20000;
+
+    // Estadísticas globales*************************************************************************************************************************************************
+    static int totalIngresos = 0;
+    static int totalEntradasVendidas = 0;
+    static int totalReservas = 0;
+
+    // Almacena cada venta*************************************************************************************************************************************************
+    static List<Venta> ventas = new ArrayList<>();
+
+    public static void main(String[] args) {
+        Scanner sc = new Scanner(System.in);
+        String opcion;
+        do {
+            mostrarMenu();
+            opcion = sc.nextLine().trim();
+            if ("2".equals(opcion)) {
+                System.out.println("Gracias por su compra");
+                System.out.println("¡Hasta luego!");
+                break;
+            }
+            procesarOpcion(opcion, sc);
+        } while (true);
+        sc.close();
+    }
+
+    private static void mostrarMenu() {
+        System.out.println("\n*** " + nombreTeatro + " - Menú Principal ***");
+        System.out.println("1) Venta de entradas");
+        System.out.println("2) Salir");
+        System.out.println("3) Resumen de ventas");
+        System.out.println("4) Mostrar ingresos totales");
+        System.out.print("Seleccione opción: ");
+    }
+
+    private static void procesarOpcion(String opcion, Scanner sc) {
+        switch (opcion) {
+            case "1":
+                procesarVenta(sc);
+                break;
+            case "3":
+                mostrarResumenVentas();
+                break;
+            case "4":
+                mostrarIngresosTotales();
+                break;
+            default:
+                System.out.println("Opción inválida.");
+        }
+    }
+
+    private static void procesarVenta(Scanner sc) {
+        // Variables locales
+        String ubicacion;
+        int cantidad;
+        double precioBase;
+        double descuentoPct;
+        double precioFinal;
+
+        // Selección de ubicación*************************************************************************************************************************************************
+        System.out.println("\nUbicaciones disponibles:");
+        System.out.println("1) VIP - $" + (int)PRECIO_VIP);
+        System.out.println("2) Platea Baja - $" + (int)PRECIO_PLATEA_BAJA);
+        System.out.println("3) Platea Alta - $" + (int)PRECIO_PLATEA_ALTA);
+        System.out.println("4) Balcón - $" + (int)PRECIO_BALCON);
+        int opUbic;
+        do {
+            System.out.print("Elige ubicación (1-4): ");
+            opUbic = Integer.parseInt(sc.nextLine());
+        } while (opUbic < 1 || opUbic > 4);
+        switch (opUbic) {
+            case 1: ubicacion = "VIP"; precioBase = PRECIO_VIP; break;
+            case 2: ubicacion = "Platea Baja"; precioBase = PRECIO_PLATEA_BAJA; break;
+            case 3: ubicacion = "Platea Alta"; precioBase = PRECIO_PLATEA_ALTA; break;
+            default: ubicacion = "Balcon"; precioBase = PRECIO_BALCON;
+        }
+
+        // Pregunta descuentos*************************************************************************************************************************************************
+        System.out.print("¿Eres estudiante (10%) o tercera edad (15%)? (est/tercera/ninguno): ");
+        String tipo = sc.nextLine().trim().toLowerCase();
+        if ("est".equals(tipo)) descuentoPct = 0.10;
+        else if ("tercera".equals(tipo)) descuentoPct = 0.15;
+        else descuentoPct = 0;
+
+        // Cantidad de entradas*************************************************************************************************************************************************
+        System.out.print("Cantidad de entradas: ");
+        cantidad = Integer.parseInt(sc.nextLine());
+        if (cantidad > entradasDisponibles) {
+            System.out.println("Solo quedan " + entradasDisponibles + " entradas.");
+            return;
+        }
+
+        // Mostrar plano y seleccionar asiento*************************************************************************************************************************************************
+        String[][] teatro = crearPlano();
+        mostrarPlano(teatro);
+        String asiento = seleccionarAsiento(teatro, sc, "reservar".equals(tipo) ? "reservar" : "comprar");
+        if ("reservar".equals(tipo)) {
+            totalReservas++;
+            inicializarTemporizador(teatro, asiento);
+        }
+
+        // Cálculo final y actualización de disponibilidad*************************************************************************************************************************************************
+        precioFinal = precioBase * cantidad * (1 - descuentoPct);
+        entradasDisponibles -= cantidad;
+
+        // Registrar venta y generar boleta*************************************************************************************************************************************************
+        Venta v = new Venta(ubicacion, asiento, cantidad, descuentoPct * 100, precioBase, precioFinal);
+        registrarVenta(v);
+        imprimirBoleta(v);
+    }
+
+    private static void mostrarResumenVentas() {
+        if (ventas.isEmpty()) {
+            System.out.println("\nNo hay ventas registradas.");
+            return;
+        }
+        System.out.println("\n--- Resumen de Ventas ---");
+        for (Venta v : ventas) {
+            System.out.printf("Ubicación: %s | Asiento: %s | Cantidad: %d | Descuento: %.0f%% | Total: $%.0f%n",
+                    v.getUbicacion(), v.getAsiento(), v.getCantidad(), v.getDescuento(), v.getPrecioFinal());
+        }
+        System.out.println("Ingresos totales en resumen: $" + totalIngresos);
+    }
+
+    private static void mostrarIngresosTotales() {
+        System.out.println("\nIngresos Totales Acumulados: $" + totalIngresos);
+    }
+
+    private static String[][] crearPlano() {
+        return new String[][] {
+                {"A1","A2","A3","A4","A5"},
+                {"B1","B2","B3","B4","B5"},
+                {"C1","C2","C3","C4","C5"}
+        };
+    }
+
+    private static void mostrarPlano(String[][] teatro) {
+        System.out.println("\nPlano de asientos disponibles:");
+        for (String[] fila : teatro) {
+            for (String asiento : fila) System.out.print("[" + asiento + "] ");
+            System.out.println();
+        }
+    }
+
+    private static String seleccionarAsiento(String[][] teatro, Scanner sc, String op) {
+        String asiento;
+        boolean valido;
+        do {
+            System.out.print("Selecciona asiento (ej: A1): ");
+            asiento = sc.nextLine().trim().toUpperCase();
+            valido = false;
+            for (int i = 0; i < teatro.length && !valido; i++) {
+                for (int j = 0; j < teatro[i].length; j++) {
+                    if (teatro[i][j].equals(asiento)) {
+                        teatro[i][j] = op.equals("reservar") ? "RS" : "XX";
+                        valido = true;
+                        break;
+                    }
+                }
+            }
+            if (!valido) System.out.println("Asiento inválido.");
+        } while (!valido);
+        return asiento;
+    }
+
+    private static void inicializarTemporizador(String[][] teatro, String asientoSel) {
+        Timer timer = new Timer();
+        int[] pos = buscarAsiento(teatro, asientoSel);
+        timer.schedule(new TimerTask() {
+            @Override
+            public void run() {
+                int i = pos[0], j = pos[1];
+                if (teatro[i][j].equals("RS")) {
+                    teatro[i][j] = asientoSel;
+                    System.out.println("Reserva de " + asientoSel + " expirada.");
+                }
+                cancel();
+            }
+        }, 3 * 60 * 1000);
+    }
+
+    private static int[] buscarAsiento(String[][] teatro, String asientoSel) {
+        for (int i = 0; i < teatro.length; i++) {
+            for (int j = 0; j < teatro[i].length; j++) {
+                if (teatro[i][j].equals("RS")) return new int[]{i, j};
+            }
+        }
+        return new int[]{0, 0};
+    }
+
+    private static void registrarVenta(Venta v) {
+        totalEntradasVendidas += v.getCantidad();
+        totalIngresos += (int) v.getPrecioFinal();
+        ventas.add(v);
+    }
+
+    private static void imprimirBoleta(Venta v) {
+        System.out.println("---------------------");
+        System.out.println("    " + nombreTeatro);
+        System.out.println("---------------------");
+        System.out.println("Ubicación: " + v.getUbicacion());
+        System.out.println("Costo Base: $" + (int)v.getPrecioBase());
+        System.out.println("Descuento Aplicado: " + (int)v.getDescuento() + "%");
+        System.out.println("Costo Final: $" + (int)v.getPrecioFinal());
+        System.out.println("---------------------");
+        System.out.println("Gracias por su visita al " + nombreTeatro);
+        System.out.println("---------------------");
+    }
+}
+
+class Venta {
+    private final String ubicacion;
+    private final String asiento;
+    private final int cantidad;
+    private final double descuento;
+    private final double precioBase;
+    private final double precioFinal;
+
+    public Venta(String ubicacion, String asiento, int cantidad,
+                 double descuento, double precioBase, double precioFinal) {
+        this.ubicacion = ubicacion;
+        this.asiento = asiento;
+        this.cantidad = cantidad;
+        this.descuento = descuento;
+        this.precioBase = precioBase;
+        this.precioFinal = precioFinal;
+    }
+    public String getUbicacion() { return ubicacion; }
+    public String getAsiento() { return asiento; }
+    public int getCantidad() { return cantidad; }
+    public double getDescuento() { return descuento; }
+    public double getPrecioBase() { return precioBase; }
+    public double getPrecioFinal() { return precioFinal; }
+}

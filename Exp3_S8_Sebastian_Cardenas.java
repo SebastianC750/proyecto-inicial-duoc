@@ -4,8 +4,16 @@ import java.util.List;
 import java.util.Scanner;
 
 public class Exp3_S8_Sebastian_Cardenas {
+    public static void main(String[] args){
+        new Exp3_S8_Sebastian_Cardenas().iniciar();
+    }
 
-    void mostrarVentas(Scanner sc) {
+
+//se realiza breakpoint para evaluar metodo main no encontrado
+
+    
+    //metodo para mostrar ventas ||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+    void mostrarVentas (Scanner sc){
         System.out.println(" -- Listado de Ventas --");
         if (ventasCount == 0) {
             System.out.println("No existen ventas registradas.");
@@ -18,22 +26,24 @@ public class Exp3_S8_Sebastian_Cardenas {
         }
     }
 
+    // Variables estáticas ||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
     static final String NOMBRE_TEATRO = "Teatro Moro";
     static final int MAX_VENTAS = 100;
-    static final double PRECIO_VIP = 30000.0;
-    static final double PRECIO_PLATEA_BAJA = 15000.0;
-    static final double PRECIO_PLATEA_ALTA = 18000.0;
-    static final double PRECIO_PALCO = 20000.0;
+    static final double PRECIO_VIP = 29900;
+    static final double PRECIO_PLATEA_BAJA = 14990;
+    static final double PRECIO_PLATEA_ALTA = 17980;
+    static final double PRECIO_PALCO = 19900;
 
+    // Variables de instancia |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
     String[] ventasIds = new String[MAX_VENTAS];
     Cliente[] clientes = new Cliente[MAX_VENTAS];
     int ventasCount = 0;
-
     List<Promocion> promociones = new ArrayList<>();
     double totalIngresos = 0;
     int totalEntradasVendidas = 0;
     List<String> usedClientIds = new ArrayList<>();
 
+    // Disponibilidad de asientos|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
     int vipDisponibles = 10;
     int plateaBajaDisponibles = 15;
     int plateaAltaDisponibles = 20;
@@ -61,12 +71,62 @@ public class Exp3_S8_Sebastian_Cardenas {
         }
     }
 
+    // Constructor: inicializa promociones |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
     Exp3_S8_Sebastian_Cardenas() {
         promociones.add(new Promocion("Estudiante", 0.10));
         promociones.add(new Promocion("TerceraEdad", 0.15));
     }
 
-    void iniciar() {
+    // Implementación de eliminarVenta|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+    private void eliminarVenta (Scanner sc){
+        System.out.print("Ingrese ID de venta a eliminar: ");
+        String id = sc.nextLine();
+        int index = -1;
+        for (int i = 0; i < ventasCount; i++) {
+            if (ventasIds[i].equals(id)) {
+                index = i;
+                break;
+            }
+        }
+        if (index == -1) {
+            System.out.println("ID de venta no encontrado.");
+            return;
+        }
+        // Desplazar los elementos posteriores|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+        for (int i = index; i < ventasCount - 1; i++) {
+            ventasIds[i] = ventasIds[i + 1];
+            clientes[i] = clientes[i + 1];
+        }
+        ventasCount--;
+        System.out.println("Venta con ID " + id + " eliminada.");
+    }
+
+    // Implementación de actualizarCliente|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+    private void actualizarCliente (Scanner sc){
+        System.out.print("Ingrese ID de venta a modificar: ");
+        String id = sc.nextLine();
+        int index = -1;
+        for (int i = 0; i < ventasCount; i++) {
+            if (ventasIds[i].equals(id)) {
+                index = i;
+                break;
+            }
+        }
+        if (index == -1) {
+            System.out.println("ID de venta no encontrado.");
+            return;
+        }
+        System.out.print("Nuevo nombre del cliente: ");
+        String nuevoNombre = sc.nextLine();
+        System.out.print("Nuevo contacto: ");
+        String nuevoContacto = sc.nextLine();
+        clientes[index].nombre = nuevoNombre;
+        clientes[index].contacto = nuevoContacto;
+        System.out.println("Datos de cliente actualizados para la venta ID " + id + ".");
+    }
+
+    // Mostrar menú principal|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+    void iniciar () {
         Scanner sc = new Scanner(System.in);
         List<String> menu = Arrays.asList(
                 "Comprar entrada",
@@ -77,11 +137,11 @@ public class Exp3_S8_Sebastian_Cardenas {
         );
         boolean salir = false;
         while (!salir) {
-            System.out.println("\n--- " + NOMBRE_TEATRO + " - Men\u00fa Principal ---");
+            System.out.println("\n--- " + NOMBRE_TEATRO + " --- Menu Principal ---");
             for (int i = 0; i < menu.size(); i++) {
                 System.out.printf("%d. %s%n", i + 1, menu.get(i));
             }
-            System.out.print("Seleccione opci\u00f3n: ");
+            System.out.print("Seleccione opción: ");
             int opcion = sc.nextInt();
             sc.nextLine();
             switch (opcion) {
@@ -109,15 +169,16 @@ public class Exp3_S8_Sebastian_Cardenas {
                 }
                 case 5 -> {
                     salir = true;
-                    System.out.println("Gracias por su visita. \u00a1Hasta luego!");
+                    System.out.println("Gracias por su visita. !Hasta luego!");
                 }
-                default -> System.out.println("Opci\u00f3n inv\u00e1lida.");
+                default -> System.out.println("Opción inválida.");
             }
         }
         sc.close();
     }
 
-    void venderEntrada(Scanner sc) {
+    // Opcíon 1: venta de entradas|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+    void venderEntrada (Scanner sc){
         System.out.println("\n-- Venta de Entrada --");
         System.out.print("Ingrese su RUT: ");
         String rut = sc.nextLine();
@@ -144,11 +205,10 @@ public class Exp3_S8_Sebastian_Cardenas {
         double base = 0;
         boolean tarifaValida = false;
         while (!tarifaValida) {
-            System.out.print("Ingrese tarifa (VIP/Platea Baja/Platea Alta/Palco): ");
+            System.out.print("\nIngrese tarifa (VIP/Platea Baja/Platea Alta/Palco): ");
             tarifaZona = sc.nextLine().toLowerCase();
-            tarifaValida = tarifaZona.equals("vip") || tarifaZona.equals("platea baja") ||
-                    tarifaZona.equals("platea alta") || tarifaZona.equals("palco");
-            if (!tarifaValida) System.out.println("Tarifa inv\u00e1lida.");
+            tarifaValida = tarifaZona.equals("vip") || tarifaZona.equals("platea baja") || tarifaZona.equals("platea alta") || tarifaZona.equals("palco");
+            if (!tarifaValida) System.out.println("Tarifa inválida.");
         }
 
         System.out.print("Cantidad de entradas a comprar: ");
@@ -166,20 +226,25 @@ public class Exp3_S8_Sebastian_Cardenas {
         }
 
         switch (tarifaZona) {
-            case "vip" -> { base = PRECIO_VIP; vipDisponibles -= cantidad; }
-            case "platea baja" -> { base = PRECIO_PLATEA_BAJA; plateaBajaDisponibles -= cantidad; }
-            case "platea alta" -> { base = PRECIO_PLATEA_ALTA; plateaAltaDisponibles -= cantidad; }
-            case "palco" -> { base = PRECIO_PALCO; palcoDisponibles -= cantidad; }
+            case "vip" -> {
+                base = PRECIO_VIP;
+                vipDisponibles -= cantidad;
+            }
+            case "platea baja" -> {
+                base = PRECIO_PLATEA_BAJA;
+                plateaBajaDisponibles -= cantidad;
+            }
+            case "platea alta" -> {
+                base = PRECIO_PLATEA_ALTA;
+                plateaAltaDisponibles -= cantidad;
+            }
+            case "palco" -> {
+                base = PRECIO_PALCO;
+                palcoDisponibles -= cantidad;
+            }
         }
 
-        System.out.println("Nota: Hay descuentos disponibles para Estudiante (10%) y TerceraEdad (15%)");
-        System.out.print("\u00bfDeseas continuar con la compra o volver al men\u00fa principal? (finalizar/menu): ");
-        String decision = sc.nextLine().toLowerCase();
-        if (decision.equals("menu")) {
-            System.out.println("Volviendo al men\u00fa principal...");
-            return;
-        }
-
+        System.out.println("Nota: Hay descuentos disponibles para Estudiante (10%) y Tercera Edad (15%)");
         System.out.print("Tipo Cliente (estudiante/terceraedad/general): ");
         String tipo = sc.nextLine().toLowerCase();
 
@@ -193,7 +258,15 @@ public class Exp3_S8_Sebastian_Cardenas {
 
         double total = (base * cantidad) * (1 - desc);
 
-        System.out.println(" --- Resumen de la Venta ---");
+        System.out.print("¿Deseas finalizar tu compra o volver al menú principal? (finalizar/menu): ");
+        String decision = sc.nextLine().toLowerCase();
+        if (decision.equals("menu")) {
+            System.out.println("Volviendo al menú principal...");
+            return;
+        }
+
+        // Resumen de compra|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+        System.out.println("\n --- Resumen de la Venta ---");
         System.out.println("Cliente: " + nombre);
         System.out.println("RUT: " + rut);
         System.out.println("Contacto: " + contacto);
@@ -208,15 +281,8 @@ public class Exp3_S8_Sebastian_Cardenas {
         totalIngresos += total;
         System.out.printf("ID de venta generado: %s%n", ventaId);
         System.out.println("------------------------------------");
-        System.out.println("\u00a1Gracias por tu compra! Esperamos que disfrutes tu experiencia en " + NOMBRE_TEATRO + ".");
+        System.out.println("\n!Gracias por tu compra! Esperamos que disfrutes tu experiencia en " + NOMBRE_TEATRO + ".");
         ventasCount++;
-    }
 
-    void eliminarVenta(Scanner sc) { /* sin cambios */ }
-    void actualizarCliente(Scanner sc) { /* sin cambios */ }
-
-    public static void main(String[] args) {
-        Exp3_S8_Sebastian_Cardenas app = new Exp3_S8_Sebastian_Cardenas();
-        app.iniciar();
     }
 }
